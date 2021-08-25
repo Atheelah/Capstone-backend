@@ -46,7 +46,8 @@ def init_books_table():
         conn.execute("CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
                      "book_title TEXT NOT NULL,"
                      "author TEXT NOT NULL,"
-                     "category TEXT NOT NULL,"
+                     "category TEXT NOT NULL"
+                     "price TEXT NOT NULL,"
                      "description TEXT NOT NULL,"
                      "image TEXT NOT NULL,"
                      "date_listed TEXT NOT NULL)")
@@ -54,7 +55,7 @@ def init_books_table():
 
 
 init_user_table()  # CALLING THE FUNCTION FOR THE USER TABLE
-init_books_table()  # CALLING THE FUNCTION FOR THE PRODUCT TABLE
+init_books_table()  # CALLING THE FUNCTION FOR THE BOOKS TABLE
 users = fetch_users()  # CALLING  THE FUNCTION TO FETCH THE USERS
 
 # THIS DISPLAYS THE USERS AND THE ID OF THE USERNAME
@@ -115,3 +116,143 @@ def user_registration():
             response["message"] = "success"
             response["status_code"] = 201
             return response
+
+
+# THIS IS MY FUNCTION TO ADD AN ITEM
+@app.route('/add-book/', methods=["POST"])
+@jwt_required()
+def add_book():
+    response = {}
+
+    if request.method == "POST":
+        book_title = request.form['book_title']
+        author = request.form['author']
+        category = request.form['category']
+        price = request.form['price']
+        description = request.form['description']
+        image = request.form['image']
+        date_listed = datetime.datetime.now()
+
+        with sqlite3.connect('bookstore.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO books("
+                           "book_title,"
+                           "author,"
+                           "category,"
+                           "price,"
+                           "description,"
+                           "image,"
+                           "date_listed) VALUES(?, ?, ?, ?, ?, ?, ?)", (book_title, author, category, price, description,
+                                                                        image, date_listed))
+            conn.commit()
+            response["status_code"] = 201
+            response['description'] = "book was added successfully"
+        return response
+
+
+@app.route('/view-books/', methods=["GET"])
+def get_books():
+    response = {}
+    with sqlite3.connect("bookstore.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM books")
+
+        posts = cursor.fetchall()
+
+    response['status_code'] = 200
+    response['data'] = posts
+    return response
+
+
+# THIS IS MY FUNCTION TO GET THE USERS
+@app.route('/get-users/', methods=["GET"])
+def get_user():
+    response = {}
+    with sqlite3.connect("bookstore.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM user")
+
+        posts = cursor.fetchall()
+
+    response['status_code'] = 200
+    response['data'] = posts
+    return response
+
+
+# THIS IS MY FUNCTION TO DELETE AN ITEM
+@app.route("/delete-book/<int:product_id>/")
+@jwt_required()
+def delete_book(product_id):
+    response = {}
+    with sqlite3.connect("bookstore.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM books WHERE id=" + str(product_id))
+        conn.commit()
+        response['status_code'] = 200
+        response['message'] = "book deleted successfully."
+    return jsonify(response)
+
+
+# THIS IS MY FUNCTION TO ADD AN ITEM
+@app.route('/edit-item/<int:product_id>/', methods=["PUT"])
+@jwt_required()
+def edit_book(product_id):
+    response = {}
+
+    if request.method == "PUT":
+        with sqlite3.connect('bookstore.db') as conn:
+            incoming_data = dict(request.json)
+            put_data = {}
+
+            if incoming_data.get("item") is not None:
+                put_data["item"] = incoming_data.get("item")
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE post SET item =? WHERE id=?", (put_data["item"], product_id))
+                    conn.commit()
+                    response['message'] = "Update was successfully"
+                    response['status_code'] = 200
+
+            if incoming_data.get("price") is not None:
+                put_data['price'] = incoming_data.get('price')
+
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE books SET price =? WHERE id=?", (put_data["price"], product_id))
+                    conn.commit()
+
+                    response["price"] = "book updated successfully"
+                    response["status_code"] = 200
+
+            if incoming_data.get("category") is not None:
+                put_data['category'] = incoming_data.get('category')
+
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE books SET category =? WHERE id=?", (put_data["category"], product_id))
+                    conn.commit()
+
+                    response["description"] = "book updated successfully"
+                    response["status_code"] = 200
+            if incoming_data.get("description") is not None:
+                put_data['description'] = incoming_data.get('description')
+
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE books SET description =? WHERE id=?", (put_data["description"], product_id))
+                    conn.commit()
+
+                    response["description"] = "book updated successfully"
+                    response["status_code"] = 200
+            if incoming_data.get("image") is not None:
+                put_data['image'] = incoming_data.get('image')
+
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE books SET image =? WHERE id=?",
+                                   (put_data["image"], product_id))
+                    conn.commit()
+
+                    response["image"] = "book updated successfully"
+                    response["status_code"] = 200
+    return response
