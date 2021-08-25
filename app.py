@@ -58,6 +58,26 @@ init_user_table()  # CALLING THE FUNCTION FOR THE USER TABLE
 init_books_table()  # CALLING THE FUNCTION FOR THE BOOKS TABLE
 users = fetch_users()  # CALLING  THE FUNCTION TO FETCH THE USERS
 
+
+def send_email(address):
+    sender_password = 'lifechoices1234'
+    sender_email = "atheelahlifechoices@gmail.com"
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = sender_email
+    app.config['MAIL_PASSWORD'] = sender_password
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
+    mail = Mail(app)
+
+    msg = Message('Bookstore registration', sender=sender_email, recipients=[address])
+    msg. body = "Welcome to Book Cave." \
+                "" \
+                "You successfully been registered"
+    mail.send(msg)
+    return "sent"
+
+
 # THIS DISPLAYS THE USERS AND THE ID OF THE USERNAME
 username_table = {u.username: u for u in users}
 userid_table = {u.id: u for
@@ -104,6 +124,7 @@ def user_registration():
         last_name = request.form['last_name']
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
 
         with sqlite3.connect("bookstore.db") as conn:
             cursor = conn.cursor()
@@ -115,7 +136,9 @@ def user_registration():
             conn.commit()
             response["message"] = "success"
             response["status_code"] = 201
-            return response
+            send_email(email)
+
+        return response
 
 
 # THIS IS MY FUNCTION TO ADD AN ITEM
