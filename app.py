@@ -46,7 +46,7 @@ def init_books_table():
         conn.execute("CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
                      "book_title TEXT NOT NULL,"
                      "author TEXT NOT NULL,"
-                     "category TEXT NOT NULL"
+                     "category TEXT NOT NULL,"
                      "price TEXT NOT NULL,"
                      "description TEXT NOT NULL,"
                      "image TEXT NOT NULL,"
@@ -150,7 +150,7 @@ def add_book():
         return response
 
 
-@app.route('/view-books/', methods=["GET"])
+@app.route('/get-books/', methods=["GET"])
 def get_books():
     response = {}
     with sqlite3.connect("bookstore.db") as conn:
@@ -179,7 +179,7 @@ def get_user():
     return response
 
 
-# THIS IS MY FUNCTION TO DELETE AN ITEM
+# THIS IS MY FUNCTION TO DELETE A BOOK
 @app.route("/delete-book/<int:product_id>/")
 @jwt_required()
 def delete_book(product_id):
@@ -193,8 +193,8 @@ def delete_book(product_id):
     return jsonify(response)
 
 
-# THIS IS MY FUNCTION TO ADD AN ITEM
-@app.route('/edit-item/<int:product_id>/', methods=["PUT"])
+# THIS IS MY FUNCTION TO EDIT A BOOK
+@app.route('/edit-book/<int:product_id>/', methods=["PUT"])
 @jwt_required()
 def edit_book(product_id):
     response = {}
@@ -204,36 +204,42 @@ def edit_book(product_id):
             incoming_data = dict(request.json)
             put_data = {}
 
-            if incoming_data.get("item") is not None:
-                put_data["item"] = incoming_data.get("item")
+            if incoming_data.get("book_title") is not None:
+                put_data["book_title"] = incoming_data.get("book_title")
                 with sqlite3.connect('bookstore.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE post SET item =? WHERE id=?", (put_data["item"], product_id))
+                    cursor.execute("UPDATE books SET book_title =? WHERE id=?", (put_data["book_title"], product_id))
                     conn.commit()
-                    response['message'] = "Update was successfully"
+                    response['message'] = "book title updated successfully"
                     response['status_code'] = 200
 
-            if incoming_data.get("price") is not None:
-                put_data['price'] = incoming_data.get('price')
-
+            if incoming_data.get("author") is not None:
+                put_data['author'] = incoming_data.get('author')
                 with sqlite3.connect('bookstore.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE books SET price =? WHERE id=?", (put_data["price"], product_id))
+                    cursor.execute("UPDATE books SET author =? WHERE id=?", (put_data["author"], product_id))
                     conn.commit()
-
-                    response["price"] = "book updated successfully"
+                    response["author"] = "Author updated successfully"
                     response["status_code"] = 200
 
             if incoming_data.get("category") is not None:
                 put_data['category'] = incoming_data.get('category')
-
                 with sqlite3.connect('bookstore.db') as conn:
                     cursor = conn.cursor()
                     cursor.execute("UPDATE books SET category =? WHERE id=?", (put_data["category"], product_id))
                     conn.commit()
-
-                    response["description"] = "book updated successfully"
+                    response["category"] = "category updated successfully"
                     response["status_code"] = 200
+
+            if incoming_data.get("price") is not None:
+                put_data['price'] = incoming_data.get('price')
+                with sqlite3.connect('bookstore.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE books SET price =? WHERE id=?", (put_data["price"], product_id))
+                    conn.commit()
+                    response["price"] = "price updated successfully"
+                    response["status_code"] = 200
+
             if incoming_data.get("description") is not None:
                 put_data['description'] = incoming_data.get('description')
 
@@ -241,18 +247,22 @@ def edit_book(product_id):
                     cursor = conn.cursor()
                     cursor.execute("UPDATE books SET description =? WHERE id=?", (put_data["description"], product_id))
                     conn.commit()
-
-                    response["description"] = "book updated successfully"
+                    response["description"] = "description updated successfully"
                     response["status_code"] = 200
+
             if incoming_data.get("image") is not None:
                 put_data['image'] = incoming_data.get('image')
-
                 with sqlite3.connect('bookstore.db') as conn:
                     cursor = conn.cursor()
                     cursor.execute("UPDATE books SET image =? WHERE id=?",
                                    (put_data["image"], product_id))
                     conn.commit()
-
-                    response["image"] = "book updated successfully"
+                    response["image"] = "image updated successfully"
                     response["status_code"] = 200
     return response
+
+
+# THIS RUNS THE APPLICATION
+if __name__ == '__main__':
+    app.run()
+    app.debug = True
