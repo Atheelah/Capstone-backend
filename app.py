@@ -71,9 +71,9 @@ def send_email(address):
     mail = Mail(app)
 
     msg = Message('Bookstore registration', sender=sender_email, recipients=[address])
-    msg. body = "Welcome to Book Cave." \
-                "" \
-                "You successfully been registered"
+    msg. body = "Welcome to Book Cave." + "\n" + "\n" + "You have successfully been registered." + "\n" + "\n" +\
+                "Regards" + "\n" + "Book Cave"
+
     mail.send(msg)
     return "sent"
 
