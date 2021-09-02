@@ -202,6 +202,25 @@ def get_user():
     return response
 
 
+@app.route('/login/', methods=["PATCH"])
+def login():
+    response = {}
+
+    if request.method == "PATCH":
+        username = request.json["username"]
+        password = request.json["password"]
+
+        with sqlite3.connect("bookstore.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM user WHERE username=? AND password=?", (username, password))
+
+            user = cursor.fetchone()
+
+        response["status_code"] = 200
+        response["data"] = user
+        return response
+
+
 # THIS IS MY FUNCTION TO DELETE A BOOK
 @app.route("/delete-book/<int:product_id>/")
 @jwt_required()
