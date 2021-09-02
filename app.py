@@ -23,7 +23,7 @@ def fetch_users():
         new_data = []
 
         for data in users:
-            new_data.append(User(data["user_id"], data["username"], data["password"]))
+            new_data.append(User(data[0], data[3], data[4]))
     return new_data
 
 
