@@ -148,12 +148,12 @@ def add_book():
     response = {}
 
     if request.method == "POST":
-        book_title = request.form['book_title']
-        author = request.form['author']
-        category = request.form['category']
-        price = request.form['price']
-        description = request.form['description']
-        image = request.form['image']
+        book_title = request.json['book_title']
+        author = request.json['author']
+        category = request.json['category']
+        price = request.json['price']
+        description = request.json['description']
+        image = request.json['image']
         date_listed = datetime.datetime.now()
 
         with sqlite3.connect('bookstore.db') as conn:
